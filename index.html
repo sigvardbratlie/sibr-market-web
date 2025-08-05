@@ -9,26 +9,26 @@
 <body>
 
     <main class="chat-container">
-    <div class="top-buttons"> <button>Verdivurdering</button>
-        <button>Insights</button>
-    </div>
+        <div class="top-buttons">
+            <button>Verdivurdering</button>
+            <button>Insights</button>
+        </div>
 
-    <div class="initial-view" id="initial-view">
-        <h1>Instant Verdivurdering</h1>
-        <h2>Boliger</h2>
-    </div>
+        <div class="initial-view" id="initial-view">
+            <h1>Instant Verdivurdering</h1>
+            <h2>Boliger</h2>
+        </div>
 
         <section class="chat-messages hidden" id="chat-messages">
             </section>
 
         <footer class="chat-input-form">
             <form id="input-form">
-                <input
-                    type="text"
+                <textarea
                     id="message-input"
                     placeholder="Still et spørsmål eller estimer boligens verdi..."
-                    autocomplete="off"
-                    required>
+                    rows="1"
+                    required></textarea>
                 <button type="submit">Send</button>
             </form>
         </footer>
