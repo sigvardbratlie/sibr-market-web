@@ -5,10 +5,20 @@ const input = document.getElementById('message-input');
 const messagesContainer = document.getElementById('chat-messages');
 const initialView = document.getElementById('initial-view');
 const insightsButton = document.querySelector('.top-buttons').children[1];
+const submitButton = document.getElementById('send-button');
+const stopButton = document.getElementById('stop-button');
+let agentController;
 
 insightsButton.addEventListener('click', () => { window.location.href = 'src/insights.html'; });
 
 let isChatActive = false;
+
+stopButton.addEventListener('click', () => {
+    if (agentController) {
+        agentController.abort(); // Avbryter fetch-kallet
+        console.log("Agent request aborted by user.");
+    }
+});
 
 // Auto-resize for textarea
 function autoResizeTextarea() {
@@ -16,11 +26,14 @@ function autoResizeTextarea() {
     input.style.height = input.scrollHeight + 'px';
 }
 input.addEventListener('input', autoResizeTextarea);
+
 input.addEventListener('keydown', (e) => {
+    // Hvis brukeren trykker Enter UTEN å holde Shift...
     if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        form.requestSubmit();
+        e.preventDefault();   // ...forhindre linjeskift...
+        submitButton.click(); // ...og send meldingen ved å simulere et klikk.
     }
+    // Hvis Shift + Enter brukes, vil nettleseren automatisk legge til et linjeskift.
 });
 
 function activateChat() {
@@ -96,7 +109,10 @@ form.addEventListener('submit', async (event) => {
     autoResizeTextarea();
     input.focus();
 
-    // 1. Opprett en meldingsboble med en åpen "thinking"-seksjon
+    // Veksle knapper: vis stopp, skjul send
+    stopButton.classList.remove('hidden');
+    submitButton.classList.add('hidden');
+
     const agentMessageElement = addMessageToUI("...", 'agent', { isThinking: true });
     const agentTextElement = agentMessageElement.querySelector('p');
     const thinkingDetails = agentMessageElement.querySelector('.thinking-details');
@@ -104,11 +120,14 @@ form.addEventListener('submit', async (event) => {
     const thinkingSpinner = agentMessageElement.querySelector('.spinner');
     const thinkingSummaryText = agentMessageElement.querySelector('.thinking-summary span');
 
+    agentController = new AbortController(); // Opprett en ny controller for dette kallet
+
     try {
         const response = await fetch('https://agent-homes-86613370495.europe-west1.run.app/ask-agent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question: messageText, session_id: sessionId })
+            body: JSON.stringify({ question: messageText, session_id: sessionId }),
+            signal: agentController.signal // Koble controlleren til fetch-kallet
         });
 
         if (!response.ok) throw new Error(`Serverfeil: ${response.status}`);
@@ -123,7 +142,7 @@ form.addEventListener('submit', async (event) => {
             if (done) break;
 
             if (isFirstChunk) {
-                agentTextElement.textContent = ""; // Tøm "..."
+                agentTextElement.textContent = "";
                 isFirstChunk = false;
             }
 
@@ -133,7 +152,6 @@ form.addEventListener('submit', async (event) => {
             for (const line of lines) {
                 const data = line.substring(5).trim();
                 if (data.startsWith('Final Answer:')) {
-                    // Legg til linjeskift for å bevare formateringen fra agenten
                     finalAnswer += data.substring(13).trim() + '\n';
                 } else if (data.startsWith('Thought:') || data.startsWith('Observation:')) {
                     const logEntry = document.createElement('p');
@@ -144,17 +162,23 @@ form.addEventListener('submit', async (event) => {
             }
         }
 
-        // 2. Oppdater meldingen med endelig svar
         agentTextElement.innerHTML = linkify(finalAnswer.trim() || "Fikk ikke et gyldig svar.");
 
     } catch (error) {
-        console.error("Feil under strømming:", error);
-        agentTextElement.textContent = "Beklager, en teknisk feil oppstod.";
+        if (error.name === 'AbortError') {
+            agentTextElement.textContent = "Agentens svar ble avbrutt.";
+        } else {
+            console.error("Feil under strømming:", error);
+            agentTextElement.textContent = "Beklager, en teknisk feil oppstod.";
+        }
     } finally {
-        // 3. Fullfør "thinking"-seksjonen
-        thinkingSpinner.classList.add('hidden'); // Skjul spinneren
-        thinkingSummaryText.textContent = 'Vis tankeprosess'; // Endre teksten
-        thinkingDetails.open = false; // Lukk som standard når ferdig
+        // Rydd opp og veksle knapper tilbake, uansett resultat
+        thinkingSpinner.classList.add('hidden');
+        thinkingSummaryText.textContent = 'Vis tankeprosess';
+        thinkingDetails.open = false;
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        stopButton.classList.add('hidden');
+        submitButton.classList.remove('hidden');
     }
 });

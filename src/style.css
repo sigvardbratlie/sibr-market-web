@@ -28,7 +28,7 @@ body {
     align-items: center;
     height: 100%;
     width: 100%;
-    padding: 2rem 1rem;
+    padding: 2rem 1rem 4rem; /* ØKT PADDING I BUNN TIL 4rem FOR Å LØFTE ALT */
     box-sizing: border-box;
 }
 
@@ -46,7 +46,14 @@ body {
 .initial-view h1 { font-size: 3rem; font-weight: 600; margin: 0; }
 .initial-view h2 { font-size: 1.5rem; font-weight: 400; color: var(--primary-accent); }
 
-.top-buttons { position: absolute; top: 2rem; display: flex; gap: 0.75rem; }
+.top-buttons {
+    position: absolute;
+    top: 2.5rem; /* Flyttet litt ned fra toppen */
+    left: 50%; /* Sentrert horisontalt */
+    transform: translateX(-50%); /* Korrigerer sentrering */
+    display: flex;
+    gap: 0.75rem;
+}
 .top-buttons button { background-color: #fff; border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.9rem; cursor: pointer; }
 
 /* --- CHAT-MELDINGER --- */
@@ -87,6 +94,8 @@ body {
 }
 .chat-input-form form {
     display: flex;
+    gap: 0.75rem;
+    align-items: center; /* ENDRET FRA flex-end TIL center FOR VERTIKAL SENTRERING */
 }
 .chat-input-form textarea {
     width: 100%;
@@ -106,8 +115,37 @@ body {
 .chat-input-form textarea:focus {
     box-shadow: 0 0 0 3px rgba(90, 90, 90, 0.15);
 }
+
+/* -- Justert for synlig send-knapp -- */
+.chat-input-form form {
+    display: flex;
+    align-items: flex-end; /* Justerer knappen med bunnen av tekstfeltet */
+    gap: 0.75rem; /* Mellomrom mellom tekstfelt og knapp */
+}
+
 .chat-input-form button {
-    display: none; /* Skjul den originale send-knappen */
+    display: flex; /* Endret fra 'none' */
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary-accent);
+    color: white;
+    border: none;
+    border-radius: 50%; /* Sirkulær knapp */
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0; /* Forhindrer at knappen krymper */
+    transition: background-color 0.2s ease;
+}
+
+.chat-input-form button:hover {
+    background-color: #333;
+}
+
+.send-icon {
+    width: 22px;
+    height: 22px;
 }
 
 /* --- STIL FOR INTEGRERT, KOLLAPSBAR "THINKING"-SEKSJON --- */
@@ -185,4 +223,72 @@ body {
 .agent-message a:hover {
     color: #00448f;
     background-color: rgba(0, 86, 179, 0.1);
+}
+
+
+/* --- Styling for Knapp-beholder og knapper (Korrigert versjon) --- */
+
+.button-container {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0; /* Forhindrer at beholderen krymper */
+}
+
+/* Felles stil for BEGGE knapper */
+#send-button,
+#stop-button {
+    /* Posisjon og størrelse */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    /* Utseende */
+    border: none;
+    border-radius: 50%; /* Sirkulær */
+    padding: 0;
+    cursor: pointer;
+
+    /* KORREKSJON: Sentrerer ikonet perfekt i midten */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Animasjon */
+    transition: opacity 0.2s, transform 0.2s, background-color 0.2s;
+}
+
+/* Spesifikk stil for Send-knapp */
+#send-button {
+    background-color: var(--primary-accent);
+}
+#send-button:hover {
+    background-color: #333;
+}
+
+/* Spesifikk stil for Stopp-knapp */
+#stop-button {
+    background-color: #d9534f; /* Rød farge for stopp */
+}
+#stop-button:hover {
+    background-color: #c9302c;
+}
+
+/* Ikon-stiler */
+.send-icon {
+    width: 22px;
+    height: 22px;
+}
+.stop-icon {
+    width: 16px; /* Litt mindre for å matche firkant-formen */
+    height: 16px;
+}
+
+/* Hjelpeklasse for å skjule/vise elementer */
+.hidden {
+    opacity: 0;
+    transform: scale(0.5);
+    pointer-events: none; /* Kan ikke klikkes når den er skjult */
 }
